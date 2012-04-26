@@ -10,6 +10,7 @@ set :use_sudo, false
 set :rails_env, "production"
 set :user, "luna"
 set :deploy_to, "~/app"
+set :rvm_type, :system
 
 # Or: `accurev`, `bzr`, `cvs`, `darcs`, `git`, `mercurial`, `perforce`, `subversion` or `none`
 
@@ -32,6 +33,12 @@ namespace :deploy do
   task :symlink_shared, :roles => :app do
     run "ln -nfs #{shared_path}/database.yml #{release_path}/config/database.yml"
   end
+
+  desc "Precompile assets"
+  task :assets_precompile do
+    run "cd #{release_path}; RAILS_ENV=#{rails_env} bundle exec rake assets:precompile"
+  end
 end
 
 after "deploy:update_code", "deploy:symlink_shared"
+after "deploy:update_code", "deploy:assets_precompile"
